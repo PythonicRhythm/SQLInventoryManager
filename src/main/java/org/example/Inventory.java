@@ -55,7 +55,17 @@ public class Inventory {
 
     public void displayInventory() {
         for(int i = 0; i < products.size(); i++) {
-            System.out.printf("ID: %-5d %s %n", (i+1), products.get(i).toString());
+            System.out.printf("ID: %-5d Item: %-15s Quantity: %-5d Price: %-6.2f%n",
+                    (i+1), products.get(i).getItemName(), products.get(i).getQuantity(),
+                    products.get(i).getPrice());
         }
+    }
+
+    public Product searchForProduct(String name) {
+        for(Product p: products) {
+            if(name.equals(p.getItemName().toLowerCase()))
+                return p;
+        }
+        return null;
     }
 }

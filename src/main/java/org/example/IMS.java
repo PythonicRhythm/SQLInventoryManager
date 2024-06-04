@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public class IMS {
 
-    private final String DB_URL = "jdbc:mysql://localhost:3306/inventory"; // The URL of the database the IMS is working from
+    private final String DB_URL = "jdbc:mysql://localhost:3306/inventory";  // The URL of the database the IMS is working from
     private final String Username = "root";                                 // Username for DB
     private final String Password = "root";                                 // Password for DB
     private Statement sqlSt;                                                // Statement used to execute sql commands using the database.
@@ -107,12 +107,25 @@ public class IMS {
             System.out.println("There are no products in inventory.");
             return;
         }
+        System.out.println();
         inventory.displayInventory();
     }
 
-//    public void searchInventory() {
-//
-//    }
+    public void searchInventory() {
+        System.out.println("\nEnter the name of the product.");
+        while(true) {
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            Product prod = inventory.searchForProduct(response);
+            if(prod == null) {
+                System.out.println("Product with name \""+response+"\" was not found.");
+            }
+            else {
+                System.out.format("%nItem: %s Quantity: %d Price: %.2f%n", prod.getItemName(), prod.getQuantity(), prod.getPrice());
+                return;
+            }
+        }
+    }
 
     public static void main(String[] args)
     {
@@ -124,6 +137,17 @@ public class IMS {
                 switch (choice) {
                     case 1:
                         inventorySystem.printInventory();
+                        break;
+                    case 2:
+                        inventorySystem.searchInventory();
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        System.out.println("Closing ...");
+                        System.exit(0);
+                        break;
+                    default:
                         break;
 
                 }
