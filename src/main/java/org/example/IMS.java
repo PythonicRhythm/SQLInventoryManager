@@ -13,9 +13,15 @@ public class IMS {
     private Connection dbConnect;                                           // The bridge between the database and this java file.
     private final Scanner consoleReader = new Scanner(System.in);
     private User currentUser;
+    private Inventory inventory;
 
     public IMS() {
         attemptDBConnection();
+        inventory = new Inventory(sqlSt);
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
     }
 
     public void attemptDBConnection() {
@@ -62,7 +68,8 @@ public class IMS {
     }
 
     public boolean authenticateUser() {
-        while(true) {
+
+        for(int i = 0; i < 5; i++) {
             System.out.print("Enter your username: ");
             String unvalidatedUserName = consoleReader.nextLine().strip().toLowerCase();
             System.out.print("Enter your password: ");
@@ -70,11 +77,62 @@ public class IMS {
             if(checkIfValidUser(unvalidatedUserName, unvalidatedPassword))
                 return true;
         }
+
+        System.out.println("Too many attempts! Closing...");
+        return false;
     }
+
+    public int promptUser() {
+        System.out.println("\nWelcome, "+getCurrentUser().getUpperName()+"!");
+        System.out.println("1. View Products\n2. Search Products\n3. Record Sale\n4. Exit");
+        while(true) {
+            System.out.print("> ");
+            int response;
+            try {
+                response = Integer.parseInt(consoleReader.nextLine().strip());
+                if(response > 0 && response < 5) return response;
+                else System.out.println("Invalid Choice. Enter 1, 2, 3, 4");
+            } catch (NumberFormatException ex) {
+                System.out.println("Enter a number.");
+            }
+        }
+    }
+
+    public int promptAdmin() {
+        return 0;
+    }
+
+    public void printInventory() {
+        if(inventory.isEmpty()) {
+            System.out.println("There are no products in inventory.");
+            return;
+        }
+        inventory.displayInventory();
+    }
+
+//    public void searchInventory() {
+//
+//    }
 
     public static void main(String[] args)
     {
         IMS inventorySystem = new IMS();
-        inventorySystem.authenticateUser();
+        if(!(inventorySystem.authenticateUser())) System.exit(0);
+        if(inventorySystem.getCurrentUser().getRole().equals("user")) {
+            while (true) {
+                int choice = inventorySystem.promptUser();
+                switch (choice) {
+                    case 1:
+                        inventorySystem.printInventory();
+                        break;
+
+                }
+            }
+        }
+        else {
+            while (true) {
+                int choice = inventorySystem.promptAdmin();
+            }
+        }
     }
 }

@@ -28,6 +28,10 @@ public class User {
         return name;
     }
 
+    public String getUpperName() {
+        return name.charAt(0) + name.substring(1);
+    }
+
     public void setName(String name) {
         this.name = name;
     }
