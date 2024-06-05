@@ -1,5 +1,6 @@
 package org.example;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -356,7 +357,7 @@ public class IMS {
             addNewItem.setDouble(3, price);
             addNewItem.executeUpdate();
 
-            System.out.println("Addition of Item was successful!");
+            System.out.println("Addition of item \""+ItemName+"\" was successful!");
             inventory.initializeInventory();
 
         } catch(SQLException ex) {
@@ -364,6 +365,66 @@ public class IMS {
         }
 
     }
+
+    public void deleteProduct() {
+        System.out.println("\nWhat is the ID of the item chosen for deletion?\nEnter 'exit' to return to menu.");
+        Product toBeDeleted;
+        while(true) {
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            if(response.equals("exit")) return;
+
+            try {
+                int ID = Integer.parseInt(response);
+                if(ID < 1) {
+                    System.out.println("ID cannot be less than 1. Try again.");
+                }
+
+                Product possibleNull = inventory.searchForProductByID(ID);
+                if(possibleNull == null) {
+                    System.out.println("No product exists with that ID. Try again.");
+                    continue;
+                }
+
+                toBeDeleted = possibleNull;
+                break;
+
+            } catch(NumberFormatException ex) {
+                System.out.println("Please enter a number for the ID.");
+            }
+        }
+
+        System.out.println("\nAre you sure you want to delete the \""+toBeDeleted.getItemName()+"\" entry? (Y/N)");
+        while(true){
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            if(response.equals("y")) break;
+            else if(response.equals("n")) return;
+            else {
+                System.out.println("Please enter 'Y' or 'N'.");
+            }
+        }
+
+        System.out.println("\nAttempting to delete item \""+toBeDeleted.getItemName()+"\"...");
+        String deleteSQL = "delete from inventory where InventoryID = ?;";
+        try{
+
+            PreparedStatement deleteItem = dbConnect.prepareStatement(deleteSQL);
+            deleteItem.setInt(1, toBeDeleted.getInventoryID());
+            deleteItem.executeUpdate();
+
+            System.out.println("Deletion of item \""+toBeDeleted.getItemName()+"\" was successful!");
+            inventory.initializeInventory();
+
+        } catch(SQLException ex) {
+            System.out.println("Add New Item Failure: "+ex.getMessage());
+        }
+
+    }
+
+//    public void generateSalesReport() {
+//
+//    }
 
     public void close() {
         try {
@@ -420,18 +481,21 @@ public class IMS {
                     case 4:
                         inventorySystem.addProduct();
                         break;
-//                    case 5:
-//                        inventorySystem.deleteProduct();
-//                        break;
-//                    case 6:
-//                        inventorySystem.updateProduct();
-//                        break;
-//                    case 7:
-//                        inventorySystem.generateInventoryReport();
-//                        break;
-//                    case 8:
-//                        inventorySystem.generateSalesReport();
-//                        break;
+                    case 5:
+                        inventorySystem.deleteProduct();
+                        break;
+                    case 6:
+                        System.out.println("Not Implemented Yet");
+                        //inventorySystem.updateProduct();
+                        break;
+                    case 7:
+                        System.out.println("Not Implemented Yet");
+                        //inventorySystem.generateInventoryReport();
+                        break;
+                    case 8:
+                        System.out.println("Not Implemented Yet");
+                        //inventorySystem.generateSalesReport();
+                        break;
                     case 9:
                         System.out.println("Closing...");
                         inventorySystem.close();
