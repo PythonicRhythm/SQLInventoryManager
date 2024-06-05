@@ -61,4 +61,14 @@ public class SalesReport {
                     sales.get(i).getQuantity(), sales.get(i).getSaleDate().toString());
         }
     }
+
+    public ArrayList<Sale> searchSalesInvolvingID(int ID) {
+        ArrayList<Sale> allSalesRelatedToID = new ArrayList<>();
+        for(Sale s: sales) {
+            if(s.getInventoryID() == ID)
+                allSalesRelatedToID.add(s);
+        }
+
+        return allSalesRelatedToID;
+    }
 }

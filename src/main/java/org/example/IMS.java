@@ -591,6 +591,21 @@ public class IMS {
 
     }
 
+    public void generateInventoryReport() {
+        System.out.println();
+        if(inventory.isEmpty()) {
+            System.out.println("There are no products in inventory currently.");
+            return;
+        }
+        System.out.println("INVENTORY REPORT:");
+        for(Product p: inventory.getProducts()) {
+            System.out.println(p.toString());
+            for(Sale s: salesReport.searchSalesInvolvingID(p.getInventoryID())) {
+                System.out.println("\t- "+s.toString());
+            }
+        }
+    }
+
     public void close() {
         try {
             sqlSt.close();
@@ -653,8 +668,7 @@ public class IMS {
                         inventorySystem.updateProduct();
                         break;
                     case 7:
-                        System.out.println("Not Implemented Yet");
-                        //inventorySystem.generateInventoryReport();
+                        inventorySystem.generateInventoryReport();
                         break;
                     case 8:
                         inventorySystem.generateSalesReport();
