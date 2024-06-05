@@ -29,7 +29,7 @@ public class Inventory {
             allProducts = acquireInventory();
             if(allProducts == null) return;
             while(allProducts.next()) {
-                products.add(new Product(allProducts.getString("ItemName"),
+                products.add(new Product(allProducts.getInt("InventoryID"), allProducts.getString("ItemName"),
                         allProducts.getInt("Quantity"), allProducts.getFloat("Price")));
             }
         } catch(SQLException ex) {
@@ -56,14 +56,22 @@ public class Inventory {
     public void displayInventory() {
         for(int i = 0; i < products.size(); i++) {
             System.out.printf("ID: %-5d Item: %-15s Quantity: %-5d Price: %-6.2f%n",
-                    (i+1), products.get(i).getItemName(), products.get(i).getQuantity(),
-                    products.get(i).getPrice());
+                    products.get(i).getInventoryID(), products.get(i).getItemName(),
+                    products.get(i).getQuantity(), products.get(i).getPrice());
         }
     }
 
-    public Product searchForProduct(String name) {
+    public Product searchForProductByName(String name) {
         for(Product p: products) {
             if(name.equals(p.getItemName().toLowerCase()))
+                return p;
+        }
+        return null;
+    }
+
+    public Product searchForProductByID(int id) {
+        for(Product p: products) {
+            if(p.getInventoryID() == id)
                 return p;
         }
         return null;

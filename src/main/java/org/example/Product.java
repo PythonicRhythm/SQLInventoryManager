@@ -1,42 +1,39 @@
 package org.example;
 
 public class Product {
+    private int inventoryID;
     private String itemName;
     private int quantity;
     private double price;
 
-    public Product(String itemName, int quantity, double price) {
+    public Product(int inventoryID, String itemName, int quantity, double price) {
+        this.inventoryID = inventoryID;
         this.itemName = itemName;
         this.quantity = quantity;
         this.price = price;
+    }
+
+    public int getInventoryID() {
+        return inventoryID;
     }
 
     public String getItemName() {
         return itemName;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
-    }
 
     public int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
 
     public double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
 
     @Override
     public String toString() {
-        return String.format("Product(itemName: '%s', quantity: %d, price: %.2f)", itemName, quantity, price);
+        return String.format("Product(inventoryID: %d itemName: '%s', quantity: %d, price: %.2f)", inventoryID, itemName, quantity, price);
     }
 }
