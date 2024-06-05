@@ -16,10 +16,12 @@ public class IMS {
     private final Scanner consoleReader = new Scanner(System.in);
     private User currentUser;
     private Inventory inventory;
+    private SalesReport salesReport;
 
     public IMS() {
         attemptDBConnection();
         inventory = new Inventory(sqlSt);
+        salesReport = new SalesReport(sqlSt);
     }
 
     public User getCurrentUser() {
@@ -86,12 +88,18 @@ public class IMS {
 
     public int promptUser() {
         System.out.println("\nWelcome, "+getCurrentUser().getUpperName()+"!");
-        System.out.println("1. View Products\n2. Search Products\n3. Record Sale\n4. Exit");
+        System.out.println("1. View Products\n2. Search Products\n3. Record Sale\n4. Exit (or type 'exit')");
         while(true) {
             System.out.print("> ");
             int response;
             try {
-                response = Integer.parseInt(consoleReader.nextLine().strip());
+                String choice = consoleReader.nextLine().strip().toLowerCase();
+                if(choice.equals("exit")) {
+                    System.out.println("Closing...");
+                    close();
+                    System.exit(0);
+                }
+                response = Integer.parseInt(choice);
                 if(response > 0 && response < 5) return response;
                 else System.out.println("Invalid Choice. Enter 1, 2, 3, 4");
             } catch (NumberFormatException ex) {
@@ -104,12 +112,18 @@ public class IMS {
         System.out.println("\nWelcome, "+getCurrentUser().getUpperName()+" (admin)!");
         System.out.println("1. View Products\n2. Search Products\n3. Record Sale\n4. Add Product" +
                 "\n5. Delete Product\n6. Update Product\n7. Generate Inventory Report\n8. Generate Sales Report" +
-                "\n9. Exit");
+                "\n9. Exit (or type 'exit')");
         while(true) {
             System.out.print("> ");
             int response;
             try {
-                response = Integer.parseInt(consoleReader.nextLine().strip());
+                String choice = consoleReader.nextLine().strip().toLowerCase();
+                if(choice.equals("exit")) {
+                    System.out.println("Closing...");
+                    close();
+                    System.exit(0);
+                }
+                response = Integer.parseInt(choice);
                 if(response > 0 && response < 10) return response;
                 else System.out.println("Invalid Choice. Enter 1 -> 9");
             } catch (NumberFormatException ex) {
@@ -125,6 +139,15 @@ public class IMS {
         }
         System.out.println();
         inventory.displayInventory();
+    }
+
+    public void generateSalesReport() {
+        if(salesReport.isEmpty()) {
+            System.out.println("No sales have been recorded.");
+            return;
+        }
+        System.out.println();
+        salesReport.displaySales();
     }
 
     public void searchInventory() {
@@ -218,6 +241,11 @@ public class IMS {
 
     public void sellProduct() {
 
+        if(inventory.isEmpty()) {
+            System.out.println("\nThere are not products in inventory currently.");
+            return;
+        }
+
         try {
             dbConnect.setAutoCommit(false);
 
@@ -256,6 +284,7 @@ public class IMS {
 
             dbConnect.setAutoCommit(true);
             inventory.initializeInventory();
+            salesReport.initializeSalesReport();
 
         } catch (SQLException ex) {
             System.out.println("Product Sale Failed: "+ ex.getMessage());
@@ -337,7 +366,10 @@ public class IMS {
     }
 
     public void addProduct() {
-        System.out.println("\nExpecting an ItemName, Quantity, Price values.\nEnter 'exit' to return to menu.");
+
+        // CREATE (Crud)
+
+        System.out.println("\nExpecting an ItemName, Quantity, Price values.\nEnter 'exit' at anytime to return to menu.");
         String ItemName = gatherNewItemName();
         if(ItemName == null) return;
 
@@ -346,6 +378,18 @@ public class IMS {
 
         double price = gatherNewItemPrice();
         if(price < 0) return;
+
+        // Confirm User Intentions
+        System.out.println("\nAre you sure you want to add the \""+ItemName+"\" entry? (Y/N)");
+        while(true){
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            if(response.equals("y")) break;
+            else if(response.equals("n")) return;
+            else {
+                System.out.println("Please enter 'Y' or 'N'.");
+            }
+        }
 
         System.out.println("\nAttempting to add new item \""+ItemName+"\"...");
         String addSQL = "insert into inventory (ItemName, Quantity, Price) values (?, ?, ?);";
@@ -367,6 +411,14 @@ public class IMS {
     }
 
     public void deleteProduct() {
+
+        // DELETE (cruD)
+
+        if(inventory.isEmpty()) {
+            System.out.println("\nThere are no products in inventory currently.");
+            return;
+        }
+
         System.out.println("\nWhat is the ID of the item chosen for deletion?\nEnter 'exit' to return to menu.");
         Product toBeDeleted;
         while(true) {
@@ -422,9 +474,122 @@ public class IMS {
 
     }
 
-//    public void generateSalesReport() {
-//
-//    }
+    public Product gatherProductToUpdate() {
+        while(true) {
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            if(response.equals("exit")) return null;
+            try{
+                int value = Integer.parseInt(response);
+                if(value < 1) {
+                    System.out.println("ID can not be negative or 0. Try again.");
+                    continue;
+                }
+                Product possibleNull = inventory.searchForProductByID(value);
+                if(possibleNull == null) {
+                    System.out.println("No item with that ID. Try again.");
+                    continue;
+                }
+
+                return possibleNull;
+
+            } catch (NumberFormatException ex) {
+                System.out.println("Please enter a number for the ID.");
+            }
+        }
+    }
+
+    public int gatherFieldToUpdate() {
+        while(true) {
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            if(response.equals("exit")) return 4;
+            try {
+                int value = Integer.parseInt(response);
+                if(value < 1) {
+                    System.out.println("Negative values or 0 are invalid. Try again.");
+                    continue;
+                }
+                else if(value > 4) {
+                    System.out.println("Value given is greater than the choices on the list. Try again.");
+                    continue;
+                }
+                return value;
+
+            } catch(NumberFormatException ex) {
+                System.out.println("Please enter a number for the choices above.");
+            }
+        }
+    }
+
+    public void updateProduct() {
+
+        // UPDATE (crUd)
+
+        if(inventory.isEmpty()) {
+            System.out.println("\nThere are not products in inventory currently.");
+            return;
+        }
+
+        System.out.println("\nWhat is the ID of the product to update?\nEnter 'exit' to return to menu.");
+        Product toBeUpdated = gatherProductToUpdate();
+        if(toBeUpdated == null) return;
+
+        System.out.println("\nWhich value should be updated?\n1. ItemName\n2. Quantity\n3. Price\n4. Exit (or type 'exit')");
+        int choice = gatherFieldToUpdate();
+        if(choice == 4) return;
+
+        String updateSQL = "update inventory set ";
+        switch (choice) {
+            case 1:
+                System.out.println();
+                String name = gatherNewItemName();
+                if(name == null) return;
+                updateSQL += "ItemName = '"+name.substring(0,1).toUpperCase()+name.substring(1)+
+                        "' where InventoryID = "+toBeUpdated.getInventoryID()+";";
+                break;
+            case 2:
+                System.out.println();
+                int quantity = gatherNewItemQuantity();
+                if(quantity == -1) return;
+                updateSQL += "Quantity = "+quantity+" where InventoryID = "+toBeUpdated.getInventoryID()+";";
+                break;
+            case 3:
+                System.out.println();
+                double price = gatherNewItemPrice();
+                if(price < 0) return;
+                updateSQL += "Price = "+price+" where InventoryID = "+toBeUpdated.getInventoryID()+";";
+                break;
+            default:
+                System.out.println("Response Error: choice given is outside of bounds.");
+                return;
+        }
+
+        // Confirm User Intentions
+        System.out.println("\nAre you sure you want to update the \""+toBeUpdated.getItemName()+"\" entry? (Y/N)");
+        while(true){
+            System.out.print("> ");
+            String response = consoleReader.nextLine().strip().toLowerCase();
+            if(response.equals("y")) break;
+            else if(response.equals("n")) return;
+            else {
+                System.out.println("Please enter 'Y' or 'N'.");
+            }
+        }
+
+        System.out.println("\nAttempting to update item \""+toBeUpdated.getItemName()+"\"...");
+        try {
+
+            sqlSt.executeUpdate(updateSQL);
+
+            System.out.println("Update of item \""+toBeUpdated.getItemName()+"\" was successful!");
+            inventory.initializeInventory();
+
+        } catch(SQLException ex) {
+            System.out.println("Update Product Failed: "+ex.getMessage());
+        }
+
+    }
 
     public void close() {
         try {
@@ -485,16 +650,14 @@ public class IMS {
                         inventorySystem.deleteProduct();
                         break;
                     case 6:
-                        System.out.println("Not Implemented Yet");
-                        //inventorySystem.updateProduct();
+                        inventorySystem.updateProduct();
                         break;
                     case 7:
                         System.out.println("Not Implemented Yet");
                         //inventorySystem.generateInventoryReport();
                         break;
                     case 8:
-                        System.out.println("Not Implemented Yet");
-                        //inventorySystem.generateSalesReport();
+                        inventorySystem.generateSalesReport();
                         break;
                     case 9:
                         System.out.println("Closing...");

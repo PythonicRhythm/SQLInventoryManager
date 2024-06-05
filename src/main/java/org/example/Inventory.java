@@ -39,6 +39,7 @@ public class Inventory {
     }
 
     public ResultSet acquireInventory() {
+        // READ (cRud)
         String checkUserSQL = "Select * from inventory;";
         ResultSet result;
         try {

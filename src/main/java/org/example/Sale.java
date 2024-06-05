@@ -31,4 +31,10 @@ public class Sale {
     public Timestamp getSaleDate() {
         return saleDate;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Sale(SaleID: %d, InventoryID: %d, Quantity: %d, SaleDate: %s",
+                saleID, inventoryID, quantity, saleDate.toString());
+    }
 }
