@@ -76,4 +76,12 @@ public class Inventory {
         }
         return null;
     }
+
+    public boolean hasProductWithName(String name) {
+        for(Product p: products) {
+            if(p.getItemName().toLowerCase().equals(name))
+                return true;
+        }
+        return false;
+    }
 }
