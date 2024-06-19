@@ -11,7 +11,7 @@ public class User {
     }
 
     public String getUpperName() {
-        return name.charAt(0) + name.substring(1);
+        return name.substring(0,1).toUpperCase() + name.substring(1);
     }
 
     public String getRole() {
